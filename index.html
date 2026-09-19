@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>市民卡 2.1 MVP 原型｜單一入口與個人化推播</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDEFF2; --panel:#FFFFFF; --panel-2:#F7F8FA;
+  --ink:#15202B; --ink-2:#51606F; --ink-3:#7A8796;
+  --line:#D3D9E0; --line-2:#E3E7EC;
+  --peach:#E8556E; --rust:#9E4A3C; --rust-bg:#F6EAE7;
+  --good:#1F6B54; --good-bg:#E6F0EC;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121920; --panel:#1A222B; --panel-2:#212A34;
+    --ink:#E7ECF1; --ink-2:#A9B6C3; --ink-3:#8593A1;
+    --line:#2E3A46; --line-2:#27323D;
+    --peach:#F2748A; --rust:#D08472; --rust-bg:#2B211F;
+    --good:#7FC3AC; --good-bg:#1B2825;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121920; --panel:#1A222B; --panel-2:#212A34;
+  --ink:#E7ECF1; --ink-2:#A9B6C3; --ink-3:#8593A1;
+  --line:#2E3A46; --line-2:#27323D;
+  --peach:#F2748A; --rust:#D08472; --rust-bg:#2B211F;
+  --good:#7FC3AC; --good-bg:#1B2825;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.75; letter-spacing:.01em;
+  background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+  background-size:80px 80px,80px 80px; background-position:-1px -1px;
+}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+
+.masthead{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:saturate(1.2) blur(6px);position:sticky;top:0;z-index:40}
+.masthead .wrap{display:flex;gap:16px;align-items:baseline;justify-content:space-between;padding:12px 24px;flex-wrap:wrap}
+.mast-l{font-size:13.5px;color:var(--ink-2)} .mast-l b{color:var(--ink);font-weight:700}
+.mast-r{font-size:13px;color:var(--ink-3);display:flex;gap:14px;align-items:center}
+.theme-btn{font:inherit;font-size:12.5px;color:var(--ink-2);background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 11px;cursor:pointer}
+
+.hero{padding:62px 0 8px}
+.tagline{font-size:13px;color:var(--peach);font-weight:700;margin:0 0 18px}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(34px,5.6vw,60px);line-height:1.22;letter-spacing:-.01em;margin:0 0 20px;max-width:19ch}
+.hero p.lede{max-width:58ch;color:var(--ink-2);margin:0;font-size:17px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chip{font-size:12.5px;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--panel)}
+
+section{padding:72px 0 0}
+.sec-head{border-top:1px solid var(--line);padding-top:26px;margin-bottom:28px}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--peach);display:block;margin-bottom:8px}
+.sec-head h2{font-family:var(--serif);font-size:clamp(24px,3.2vw,32px);margin:0 0 10px;font-weight:600;line-height:1.35}
+.sec-head p{margin:0;color:var(--ink-2);max-width:64ch;font-size:15.5px}
+
+/* scenario picker */
+.picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.pk{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2);border-radius:999px;padding:7px 17px;cursor:pointer}
+.pk:hover{border-color:var(--ink-3)}
+.pk[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:500}
+.pk small{display:block;font-size:11px;opacity:.7;font-weight:400}
+.task-line{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin-bottom:24px;min-height:52px}
+.task-line h3{font-family:var(--serif);font-size:20px;margin:0;font-weight:600}
+.task-line span{font-size:13.5px;color:var(--ink-3);max-width:70ch}
+
+.seg{display:none;gap:6px;margin-bottom:18px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content}
+.seg button{font:inherit;font-size:13.5px;border:0;background:transparent;color:var(--ink-2);padding:6px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel);font-weight:500}
+
+.phones{display:flex;gap:clamp(20px,4vw,56px);justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.lane{flex:0 0 auto;width:300px;max-width:100%}
+.lane-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding-left:2px}
+.lane-tag{font-size:12.5px;font-weight:700;padding:2px 10px;border-radius:4px}
+.lane-now .lane-tag{color:var(--rust);background:var(--rust-bg)}
+.lane-new .lane-tag{color:var(--good);background:var(--good-bg)}
+.lane-head h4{font-family:var(--serif);font-size:16.5px;margin:0;font-weight:600}
+.lane-sub{font-size:12.5px;color:var(--ink-3);margin:0 0 14px;padding-left:2px;min-height:3.9em;line-height:1.6}
+
+.phone{width:300px;border-radius:38px;padding:9px;background:linear-gradient(165deg,#3b4653,#20272f 40%,#161b21);box-shadow:0 2px 3px rgba(21,32,43,.2),0 26px 50px -18px rgba(21,32,43,.5);position:relative}
+.phone::after{content:"";position:absolute;inset:9px;border-radius:30px;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.phone.sm{width:236px;border-radius:32px;padding:7px}
+.phone.sm .screen-wrap{height:470px;border-radius:26px}
+.screen-wrap{position:relative;height:596px;border-radius:30px;overflow:hidden;background:#FEF3F4}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:106px;height:22px;background:#161b21;border-radius:0 0 14px 14px;z-index:30}
+.phone.sm .notch{width:86px;height:18px}
+.mark{position:absolute;z-index:28;font-size:11px;font-weight:700;line-height:1.5;padding:4px 9px;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.18);max-width:170px}
+.mark-bad{background:#9E4A3C;color:#fff}
+.mark-good{background:#1F6B54;color:#fff}
+.mark.tr{top:34px;right:12px}
+.mark.bl{left:12px;bottom:78px}
+
+/* ---- app chrome ---- */
+.app{--tp1:#FF8C9B;--tp2:#F04F68;--tpdeep:#8E1B33;display:flex;flex-direction:column;height:100%;background:#FEF3F4;font-size:13px;color:#2E2226;line-height:1.55}
+.app-top{position:relative;background:linear-gradient(175deg,var(--tp1),var(--tp2));color:#fff;padding:30px 16px 14px;flex:0 0 auto}
+.app-top h4{font-size:19px;margin:0;font-weight:700;letter-spacing:.02em}
+.app-top .bell{position:absolute;right:18px;top:34px;font-size:15px}
+.greet{display:flex;align-items:center;gap:10px;margin-top:12px}
+.avatar{width:36px;height:36px;border-radius:50%;background:#5E1524;display:grid;place-items:center;flex:0 0 auto}
+.avatar i{display:block;width:14px;height:14px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#FFC2CB}
+.greet .nm{font-size:13.5px;font-weight:500}
+.wx{display:flex;gap:12px;margin-left:auto;text-align:center;font-size:10.5px;opacity:.95}
+.wx b{display:block;font-weight:500;font-size:11px;margin-top:1px}
+.app-body{flex:1 1 auto;overflow:hidden;padding:14px 14px 6px}
+.app-body.scrolly{overflow-y:auto}
+.app-body .done{height:auto}
+.card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(142,27,51,.07);margin-bottom:11px}
+.sec-t{font-size:15px;font-weight:700;color:#8E1B33;margin:2px 0 10px}
+.banner{border-radius:14px;overflow:hidden;background:linear-gradient(140deg,#FFD9DF,#FFB3C0 60%,#FF97AA);padding:14px 13px;color:#7A1229;position:relative;min-height:112px}
+.banner .b1{font-family:var(--serif);font-size:20px;font-weight:700;letter-spacing:.04em}
+.banner .b2{display:inline-block;font-size:10.5px;background:#fff;color:#B2294A;border-radius:999px;padding:2px 10px;margin-top:6px}
+.banner .b3{font-size:15px;font-weight:700;margin-top:10px;color:#fff;text-shadow:0 1px 3px rgba(150,30,60,.5)}
+.banner .b4{position:absolute;right:10px;bottom:9px;font-size:9.5px;background:rgba(255,255,255,.85);border-radius:4px;padding:1px 6px;color:#8E1B33}
+.bcap{font-size:12px;color:#3A2A2E;margin:9px 2px 0;line-height:1.5;max-height:3em;overflow:hidden}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin-top:4px}
+.quick div{font-size:10.5px;color:#3A2A2E}
+.qi{width:42px;height:42px;border-radius:50%;background:#FDE4E8;margin:0 auto 5px;display:grid;place-items:center}
+.qi svg{width:20px;height:20px;fill:none;stroke:#8E1B33;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.srv{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:13px 14px;margin-bottom:11px;box-shadow:0 1px 3px rgba(142,27,51,.07)}
+.srv .si{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center}
+.srv .si svg{width:26px;height:26px;fill:none;stroke:#8E1B33;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.srv .st{flex:1 1 auto;min-width:0}
+.srv .st b{display:block;font-size:14.5px;color:#22181B;font-weight:700}
+.srv .st small{display:block;font-size:11px;color:#6B5B60;line-height:1.4;margin-top:2px;max-height:2.8em;overflow:hidden}
+.srv .sa{color:#8E1B33;font-size:17px;flex:0 0 auto}
+.srv.hot{outline:2px solid #F04F68;outline-offset:2px}
+.app-nav{flex:0 0 auto;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -1px 10px rgba(142,27,51,.09);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 4px 14px;text-align:center}
+.app-nav div{font-size:9.5px;color:#7D2233}
+.ni{width:30px;height:30px;margin:0 auto 3px;border-radius:50%;display:grid;place-items:center}
+.ni svg{width:18px;height:18px;fill:none;stroke:#7D2233;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.app-nav .on .ni{background:#F04F68}
+.app-nav .on .ni svg{stroke:#fff}
+
+/* consent */
+.consent{background:#F1F3F5;height:100%;display:flex;flex-direction:column;color:#20272D}
+.consent-bar{background:#fff;padding:28px 14px 10px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;border-bottom:1px solid #E6E9EC}
+.consent-bar .bk{color:#6B747C;font-weight:400}
+.consent-body{flex:1 1 auto;overflow-y:auto;padding:12px}
+.consent-card{background:#fff;border-radius:14px;padding:16px 15px}
+.consent-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.consent-head .bub{width:46px;height:46px;border-radius:50%;background:#DCF1F6;display:grid;place-items:center;flex:0 0 auto}
+.consent-head .bub svg{width:22px;height:22px;stroke:#2C7E92;fill:none;stroke-width:1.7}
+.consent-head h5{margin:0;font-size:17px;color:#E8556E;font-weight:700;font-family:var(--serif)}
+.consent-head small{display:block;color:#4A545C;font-size:12px;font-weight:400;margin-top:1px}
+.consent-body p{font-size:11.5px;line-height:1.72;margin:0 0 9px;color:#2C343B}
+.scope{border:1px solid #E1E5E9;border-radius:10px;padding:9px 10px;margin:2px 0 10px}
+.scope-row{display:flex;gap:8px;align-items:flex-start;font-size:11px;padding:5px 0;border-bottom:1px dashed #EAEDF0}
+.scope-row:last-child{border-bottom:0}
+.sw{width:28px;height:16px;border-radius:999px;background:#2C7E92;position:relative;flex:0 0 auto;margin-top:2px}
+.sw::after{content:"";position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#fff}
+.sw.off{background:#C8CED4}
+.sw.off::after{right:auto;left:2px}
+.sl{flex:1 1 auto}
+.sl b{display:block;font-size:11.5px}
+.sl span{color:#6B747C;font-size:10.5px}
+.consent-foot{flex:0 0 auto;background:#F1F3F5;padding:10px 14px 16px}
+.agree{display:flex;gap:9px;align-items:flex-start;font-size:11.5px;margin-bottom:10px;color:#2C343B}
+.box{width:16px;height:16px;border:1.5px solid #9AA3AB;border-radius:3px;flex:0 0 auto;margin-top:2px;display:grid;place-items:center}
+.box.ck{background:#E8556E;border-color:#E8556E}
+.box.ck::after{content:"✓";color:#fff;font-size:11px;line-height:1}
+.btn-lg{display:block;width:100%;text-align:center;background:#E8556E;color:#fff;border-radius:10px;padding:11px;font-size:15px;font-weight:700}
+
+/* external browser */
+.ext{height:100%;display:flex;flex-direction:column;background:#fff}
+.ext-bar{background:#F2F2F3;padding:26px 10px 8px;flex:0 0 auto;border-bottom:1px solid #DCDCDE}
+.url{background:#E4E4E6;border-radius:8px;padding:5px 10px;font-family:var(--mono);font-size:10px;color:#4A4A4F;display:flex;gap:6px;overflow:hidden;white-space:nowrap}
+.ext-ad{background:#FFF3C4;border-bottom:1px solid #E8D98A;font-size:10px;padding:5px 8px;display:flex;justify-content:space-between;color:#6B5A15}
+.ext-page{flex:1 1 auto;overflow:hidden;padding:10px;font-size:9px;color:#333;line-height:1.5}
+.ext-gov{background:#1F4E79;color:#fff;padding:7px 8px;font-size:10px;font-weight:700}
+.ext-nav{display:flex;gap:1px;font-size:8px;background:#2E6DA4;color:#fff;flex-wrap:wrap}
+.ext-nav span{padding:4px 5px}
+.ext-cols{display:flex;gap:6px;margin-top:8px}
+.ext-cols div{flex:1;border:1px solid #DDD;padding:5px;font-size:8px;color:#555}
+.ext-form label{display:block;font-size:9px;margin:6px 0 2px;color:#444}
+.ext-form .fi{border:1px solid #BBB;height:20px;border-radius:2px;background:#FCFCFC}
+.ext-btn{margin-top:10px;background:#1F4E79;color:#fff;text-align:center;font-size:10px;padding:6px;border-radius:3px}
+.ext-note{font-size:8.5px;margin-top:7px;color:#9E4A3C}
+.pinch{position:absolute;left:50%;transform:translateX(-50%);bottom:90px;background:rgba(21,32,43,.86);color:#fff;font-size:10px;padding:4px 10px;border-radius:999px;z-index:26}
+
+/* search result mock */
+.goog{padding:26px 12px 10px;background:#fff;height:100%;overflow:hidden}
+.goog .q{border:1px solid #DADCE0;border-radius:999px;padding:7px 12px;font-size:11px;color:#3C4043;margin-bottom:12px}
+.goog .r{margin-bottom:12px}
+.goog .r b{display:block;font-size:11.5px;color:#1A0DAB;font-weight:400;line-height:1.4}
+.goog .r span{display:block;font-size:9px;color:#5F6368;line-height:1.5}
+.goog .r em{display:block;font-size:8.5px;color:#0D652D;font-style:normal;margin-bottom:2px}
+
+/* store page */
+.store{height:100%;background:#fff;padding:30px 14px 14px;text-align:center}
+.store .ic{width:64px;height:64px;border-radius:16px;background:#4C8C4A;margin:16px auto 12px;display:grid;place-items:center;color:#fff;font-size:26px}
+.store b{display:block;font-size:15px}
+.store small{display:block;font-size:11px;color:#777;margin-bottom:14px}
+.store .get{display:inline-block;background:#0A84FF;color:#fff;border-radius:999px;padding:6px 26px;font-size:13px;font-weight:700}
+
+/* call */
+.call{height:100%;background:#20272D;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.call .av{width:76px;height:76px;border-radius:50%;background:#3A444E;display:grid;place-items:center;font-size:28px;margin-bottom:16px}
+.call b{font-size:17px;display:block}
+.call small{font-size:12px;opacity:.7;display:block;margin-top:5px}
+.call .hint2{margin-top:26px;font-size:11.5px;opacity:.85;line-height:1.7;max-width:22ch}
+
+/* paper form */
+.paper{height:100%;background:#E9E4D8;padding:28px 16px 16px;display:flex;flex-direction:column}
+.paper .sheet{background:#FBF8F1;border:1px solid #CFC7B6;border-radius:3px;padding:12px;flex:1;font-size:9.5px;color:#3B362C;line-height:1.9}
+.paper .sheet h6{margin:0 0 8px;text-align:center;font-family:var(--serif);font-size:13px}
+.paper .ln{border-bottom:1px solid #C9C0AE;height:15px;margin:3px 0 7px}
+
+/* sso loading */
+.load{height:100%;display:grid;place-items:center;background:linear-gradient(175deg,#FF8C9B,#F04F68);color:#fff;text-align:center;padding:24px}
+.ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;margin:0 auto 16px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.ring{animation:none}}
+.load b{font-size:15px;display:block}
+.load small{font-size:11.5px;opacity:.9;display:block;margin-top:6px;line-height:1.6}
+.load .mono{font-family:var(--mono);font-size:9.5px;opacity:.8;margin-top:14px;line-height:1.7}
+
+/* webview / native panel */
+.wv{height:100%;display:flex;flex-direction:column;background:#fff}
+.wv-bar{background:linear-gradient(175deg,#FF8C9B,#F04F68);color:#fff;padding:28px 12px 10px;flex:0 0 auto}
+.wv-bar .r1{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
+.wv-bar .r1 .x{font-weight:400;opacity:.9}
+.wv-bar .r2{display:flex;gap:6px;margin-top:7px;font-size:10.5px;background:rgba(255,255,255,.2);border-radius:999px;padding:3px 9px;width:max-content}
+.wv-body{flex:1 1 auto;overflow-y:auto;padding:13px;background:#fff}
+.field{margin-bottom:9px}
+.field label{display:block;font-size:10.5px;color:#6B747C;margin-bottom:3px}
+.field .v{border:1px solid #E1E5E9;background:#F7F8FA;border-radius:8px;padding:8px 10px;font-size:12.5px;color:#20272D;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.field .v small{color:#1F6B54;font-size:10px;font-weight:700;flex:0 0 auto}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.slots span{font-size:9.5px;text-align:center;border:1px solid #E1E5E9;border-radius:6px;padding:5px 2px;color:#4A545C}
+.slots span.full{background:#F1F3F5;color:#A7B0B8;text-decoration:line-through}
+.slots span.pick{background:#E8556E;border-color:#E8556E;color:#fff;font-weight:700}
+.elig{border:1px solid #E1E5E9;border-radius:10px;padding:9px 11px;margin-bottom:8px}
+.elig b{display:block;font-size:12.5px}
+.elig span{font-size:10.5px;color:#6B747C;line-height:1.6;display:block;margin-top:2px}
+.elig .tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:1px 7px;margin-bottom:4px}
+.tag.y{background:#E6F0EC;color:#1F6B54}
+.tag.m{background:#FDF0DC;color:#8A5A12}
+.tag.n{background:#F1F3F5;color:#7A8796}
+.mapbox{height:126px;border-radius:10px;background:linear-gradient(135deg,#E8EFE6,#D8E6D4);position:relative;overflow:hidden;border:1px solid #D2DED0;margin-bottom:9px}
+.mapbox .road{position:absolute;background:#fff}
+.mapbox .pin{position:absolute;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;color:#fff;font-size:10px}
+.mapbox .me{position:absolute;width:12px;height:12px;border-radius:50%;background:#2C7E92;border:2px solid #fff;box-shadow:0 0 0 4px rgba(44,126,146,.25)}
+.photo{height:70px;border:1px dashed #C8CED4;border-radius:8px;display:grid;place-items:center;font-size:11px;color:#8792A0;margin-bottom:9px}
+.photo.has{border-style:solid;background:linear-gradient(140deg,#2D3742,#4A5560);color:#fff;border-color:#2D3742}
+
+/* done */
+.done{display:flex;flex-direction:column;padding:6px 2px}
+.tick{width:54px;height:54px;border-radius:50%;background:#1F6B54;color:#fff;display:grid;place-items:center;font-size:26px;margin:14px auto}
+.tick.bad{background:#9E4A3C}
+.done h5{font-family:var(--serif);text-align:center;font-size:17px;margin:0 0 6px;color:#22181B}
+.done .sub{text-align:center;font-size:11.5px;color:#6B5B60;margin-bottom:16px;line-height:1.7}
+.push{background:#fff;border-radius:12px;padding:10px 12px;font-size:11px;box-shadow:0 2px 8px rgba(142,27,51,.1);display:flex;gap:9px;align-items:flex-start;margin-bottom:9px}
+.push .pd{width:24px;height:24px;border-radius:6px;background:#F04F68;flex:0 0 auto}
+.push b{display:block;font-size:11.5px}
+.push span{color:#6B5B60}
+.push.q{background:#F6EAE7;box-shadow:none}
+.push.q .pd{background:#9E4A3C}
+
+/* lock screen */
+.lock{height:100%;background:linear-gradient(170deg,#4A2B36,#7C3C4E 45%,#C0687C);color:#fff;padding:44px 12px 14px;display:flex;flex-direction:column;gap:9px}
+.lock .clk{text-align:center;margin-bottom:12px}
+.lock .clk b{display:block;font-size:44px;font-weight:400;line-height:1.1;letter-spacing:.02em}
+.lock .clk span{font-size:12px;opacity:.85}
+.nt{background:rgba(255,255,255,.92);color:#20272D;border-radius:14px;padding:9px 11px;display:flex;gap:9px;align-items:flex-start}
+.nt .pd{width:22px;height:22px;border-radius:6px;background:#F04F68;flex:0 0 auto}
+.nt b{display:block;font-size:11px}
+.nt span{font-size:11px;color:#3B444D;line-height:1.5}
+.nt em{font-style:normal;font-size:9.5px;color:#8792A0;margin-left:auto;flex:0 0 auto}
+
+/* notif centre in-app */
+.ncard{background:#fff;border-radius:12px;padding:11px 12px;margin-bottom:9px;box-shadow:0 1px 3px rgba(142,27,51,.08)}
+.ncard .ttl{display:flex;gap:7px;align-items:center;font-size:12.5px;font-weight:700}
+.ncard .ttl i{width:7px;height:7px;border-radius:50%;background:#F04F68;flex:0 0 auto}
+.ncard p{margin:5px 0 0;font-size:11px;color:#5A5055;line-height:1.65}
+.ncard .act{display:inline-block;margin-top:7px;font-size:11px;font-weight:700;color:#E8556E;border:1px solid #E8556E;border-radius:7px;padding:3px 11px}
+.ncard .when{font-size:10px;color:#9A8F93;margin-top:6px;display:block}
+
+/* controls & tally */
+.controls{display:flex;align-items:center;justify-content:center;gap:10px;margin:28px 0 0;flex-wrap:wrap}
+.dots{display:flex;gap:6px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line);display:block}
+.dots i.on{background:var(--ink)}
+.ctrl{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:8px 20px;cursor:pointer}
+.ctrl:hover{border-color:var(--ink-3)}
+.ctrl:disabled{opacity:.4;cursor:default}
+.ctrl.primary{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:500}
+.ctrl:focus-visible,.pk:focus-visible,.seg button:focus-visible,.theme-btn:focus-visible{outline:2px solid var(--peach);outline-offset:2px}
+.hint{text-align:center;font-size:12.5px;color:var(--ink-3);margin:12px 0 0}
+.tally{margin:32px auto 0;max-width:840px;border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+.tally-h,.trow{display:grid;grid-template-columns:104px repeat(3,1fr)}
+.tally-h{font-size:12px;color:var(--ink-3);border-bottom:1px solid var(--line-2)}
+.tally-h div{padding:10px 12px}
+.trow{align-items:center;border-bottom:1px solid var(--line-2)}
+.trow:last-child{border-bottom:0}
+.trow .rl{padding:12px;font-size:13px;font-weight:700}
+.trow.now .rl{color:var(--rust)} .trow.new .rl{color:var(--good)}
+.trow .n{padding:12px;font-variant-numeric:tabular-nums}
+.trow .n b{font-size:26px;font-weight:700;line-height:1}
+.trow .n span{font-size:12px;color:var(--ink-3);margin-left:3px}
+.trow.now .n b{color:var(--rust)} .trow.new .n b{color:var(--good)}
+.tally-note{font-size:12px;color:var(--ink-3);padding:9px 12px;background:var(--panel-2);border-top:1px solid var(--line-2)}
+
+/* generic blocks */
+.split{display:grid;grid-template-columns:300px 1fr;gap:clamp(24px,4vw,56px);align-items:start}
+@media (max-width:860px){.split{grid-template-columns:1fr;justify-items:center}}
+.notes{display:flex;flex-direction:column;gap:20px;padding-top:4px}
+.note{border-left:2px solid var(--line);padding-left:16px}
+.note.key{border-left-color:var(--peach)}
+.note h4{margin:0 0 5px;font-size:15px;font-family:var(--serif);font-weight:600}
+.note p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.8}
+figure{margin:0} figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:12.5px;color:var(--ink-3);margin-top:12px;line-height:1.7;max-width:80ch}
+.ladder{display:flex;flex-direction:column;gap:10px}
+.rung{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--panel)}
+.rung .rk{font-family:var(--mono);font-size:12px;color:var(--ink-3);flex:0 0 auto;padding-top:3px}
+.rung h4{margin:0 0 4px;font-size:15.5px;font-family:var(--serif);font-weight:600}
+.rung p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.rung.r1{border-color:var(--good);background:var(--good-bg)} .rung.r1 h4{color:var(--good)}
+.rung.r3{border-style:dashed} .rung.r3 h4{color:var(--rust)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:26px}
+.col h4{font-family:var(--serif);font-size:16px;margin:0 0 8px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.col ul{margin:0;padding-left:1.1em;font-size:14px;color:var(--ink-2);line-height:1.85}
+.col li{margin-bottom:6px} .col li::marker{color:var(--ink-3)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:28px}
+.fact{background:var(--panel);padding:20px}
+.fact b{display:block;font-family:var(--serif);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.fact span{display:block;font-size:13px;color:var(--ink-2);margin-top:7px;line-height:1.6}
+.fact small{display:block;font-size:11px;color:var(--ink-3);margin-top:7px}
+.audit{width:100%;border-collapse:collapse;font-size:14px}
+.audit th{text-align:left;font-size:12.5px;color:var(--ink-3);font-weight:400;padding:0 14px 10px 0;border-bottom:1px solid var(--line)}
+.audit td{padding:13px 14px 13px 0;border-bottom:1px solid var(--line-2);vertical-align:top;color:var(--ink-2)}
+.audit td:first-child{color:var(--ink);font-weight:500;white-space:nowrap}
+.audit .how{white-space:nowrap;font-size:13px}
+.audit .a1{color:var(--good);font-weight:500}
+.audit .a2{color:var(--peach);font-weight:500}
+.trio{display:flex;gap:clamp(14px,3vw,34px);justify-content:center;flex-wrap:wrap;margin-bottom:26px}
+.trio .who{text-align:center;margin-bottom:12px}
+.trio .who b{display:block;font-family:var(--serif);font-size:16px}
+.trio .who span{font-size:12.5px;color:var(--ink-3)}
+.lockstrip{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px;max-width:520px}
+.lockstrip .nt{background:var(--panel-2);color:var(--ink);border:1px solid var(--line-2)}
+.lockstrip .nt span{color:var(--ink-2)}
+footer{margin-top:80px;border-top:1px solid var(--line);padding:28px 0 60px;font-size:12.5px;color:var(--ink-3);line-height:1.9}
+footer b{color:var(--ink-2);font-weight:500}
+footer .disc{margin-top:14px;padding:12px 14px;border:1px dashed var(--line);border-radius:10px;max-width:74ch}
+
+@media (max-width:720px){
+  body{background-size:60px 60px,60px 60px}
+  .wrap{padding:0 18px}
+  .hero{padding:44px 0 4px}
+  .seg{display:flex}
+  .phones{gap:0}
+  .lane{display:none} .lane.show{display:block}
+  .tally-h,.trow{grid-template-columns:74px repeat(3,1fr)}
+  .trow .n b{font-size:21px}
+  .tally-h div,.trow .rl,.trow .n{padding:9px 8px;font-size:12px}
+  .audit{font-size:13px} .audit .how{white-space:normal}
+}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap">
+    <div class="mast-l">第七屆桃園市政府青年諮詢委員會・智慧生活組　<b>市民卡 2.1</b>　MVP 互動原型</div>
+    <div class="mast-r"><span>提案委員　林立</span><button class="theme-btn" id="themeBtn" type="button">深色</button></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <div class="hero">
+    <p class="tagline">主軸一 建立統一開發規範與 API／SSO 介接　·　主軸二 個人化精準推播</p>
+    <h1>不必跳出 App，<br>也知道自己能用什麼。</h1>
+    <p class="lede">五個從義民里訪談裡走出來的真實情境，左邊是現在的操作路徑，右邊是導入單一簽入與 App 內整合之後的路徑。後半段是主軸二：同一天、三種身分，App 該通知他們什麼。</p>
+    <div class="hero-meta">
+      <span class="chip">田野依據　2026/9/10 義民里訪談 4 位居民</span>
+      <span class="chip">局處會議　2026/9/16 智發會、社會局、教育局、婦幼局</span>
+      <span class="chip">跨案問卷　《桃園親子通》家長問卷 n=51</span>
+    </div>
+  </div>
+
+  <!-- ===== 01 情境比較器 ===== -->
+  <section style="padding-top:56px">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h2>同一件事，兩條路徑</h2>
+      <p>選一個情境，按「下一步」讓兩支手機同步走完。下方即時累計離開 App 的次數、重新登入的次數，以及市民必須自己打字的欄位數。</p>
+    </div>
+
+    <div class="picker" id="picker" role="group" aria-label="選擇情境"></div>
+
+    <div class="task-line">
+      <h3 id="taskTitle"></h3>
+      <span id="taskSrc"></span>
+    </div>
+
+    <div class="seg" role="group" aria-label="切換檢視">
+      <button type="button" id="segNow" aria-pressed="true">現況</button>
+      <button type="button" id="segNew" aria-pressed="false">提案</button>
+    </div>
+
+    <div class="phones">
+      <div class="lane lane-now show" id="laneNow">
+        <div class="lane-head"><span class="lane-tag">現況</span><h4 id="hdNow">巢狀跳轉</h4></div>
+        <p class="lane-sub" id="subNow"></p>
+        <div class="phone"><div class="screen-wrap" id="scrNow"><div class="notch"></div></div></div>
+      </div>
+      <div class="lane lane-new" id="laneNew">
+        <div class="lane-head"><span class="lane-tag">提案</span><h4 id="hdNew">App 內完成</h4></div>
+        <p class="lane-sub" id="subNew"></p>
+        <div class="phone"><div class="screen-wrap" id="scrNew"><div class="notch"></div></div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl" id="btnPrev" type="button">上一步</button>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <button class="ctrl primary" id="btnNext" type="button">下一步</button>
+      <button class="ctrl" id="btnReset" type="button">重播</button>
+    </div>
+    <p class="hint">可用鍵盤 ← → 操作。步驟 <span id="stepNo">1</span> / <span id="stepAll">7</span></p>
+
+    <div class="tally" aria-live="polite">
+      <div class="tally-h"><div></div><div>離開 App</div><div>重新登入</div><div>手動填寫欄位</div></div>
+      <div class="trow now"><div class="rl">現況</div><div class="n"><b id="tn1">0</b><span>次</span></div><div class="n"><b id="tn2">0</b><span>次</span></div><div class="n"><b id="tn3">0</b><span>欄</span></div></div>
+      <div class="trow new"><div class="rl">提案</div><div class="n"><b id="tp1">0</b><span>次</span></div><div class="n"><b id="tp2">0</b><span>次</span></div><div class="n"><b id="tp3">0</b><span>欄</span></div></div>
+      <div class="tally-note">依 2026/9/10 義民里訪談所述之實際操作路徑重建之情境示意，欄位數為現行申請書常見欄位。</div>
+    </div>
+  </section>
+
+  <!-- ===== 02 同意 ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h2>同意畫面怎麼寫，決定市民敢不敢按下去</h2>
+      <p>臺北通曾因公共服務須綁定會員引發爭議，臺北市議會決議公共服務不得以臺北通為唯一申請管道。本案的同意畫面沿用臺北通「有話要說」已在實務運行的揭露格式，但補上三件它沒有的事：分項授權、可撤銷、保留原有管道。</p>
+    </div>
+    <div class="split">
+      <div class="phone"><div class="screen-wrap"><div class="notch"></div><div id="consentDemo" style="position:absolute;inset:0"></div></div></div>
+      <div class="notes">
+        <div class="note key"><h4>一個服務一次同意，不是一次同意全部</h4><p>授權對象寫明是哪一個系統、哪一個局處，不用「各項市政服務」帶過。換一個服務就是另一次同意，市民永遠知道資料流向誰。</p></div>
+        <div class="note key"><h4>必要欄位和選用欄位分開</h4><p>身分驗證要的欄位無法關閉，但像通訊地址這種只為了寄紙本的欄位可以關掉。把最小必要原則做成使用者看得見的開關，而不是寫在條款裡。</p></div>
+        <div class="note"><h4>撤銷的位置就寫在同意書上</h4><p>不是藏在設定最底層。文字直接指出路徑：我的卡證 → 服務授權管理。</p></div>
+        <div class="note"><h4>不同意也辦得到</h4><p>明寫撤銷後仍可循臨櫃與紙本辦理。SSO 是加值，不是門檻，直接回應臺北通綁定爭議的前車之鑑。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 03 個人化推播 ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h2>同一天，三種身分，App 該說什麼</h2>
+      <p>主軸二不新增卡別、不變動福利資格，只在既有的福利卡數位虛擬化成果上加一層規則：依市民已持有的卡別、自設的居住里別與生命階段，主動比對並推播對應的福利與名額。以下是 2026 年 10 月 18 日，三位市民在 App 通知頁看到的內容。</p>
+    </div>
+
+    <div class="trio">
+      <div>
+        <div class="who"><b>持一生好運卡</b><span>35 歲，幼兒 6 個月大</span></div>
+        <div class="phone sm"><div class="screen-wrap"><div class="notch"></div><div id="push1" style="position:absolute;inset:0"></div></div></div>
+      </div>
+      <div>
+        <div class="who"><b>持敬老愛心卡</b><span>72 歲，設籍義民里</span></div>
+        <div class="phone sm"><div class="screen-wrap"><div class="notch"></div><div id="push2" style="position:absolute;inset:0"></div></div></div>
+      </div>
+      <div>
+        <div class="who"><b>未持福利卡</b><span>24 歲，租屋於中壢</span></div>
+        <div class="phone sm"><div class="screen-wrap"><div class="notch"></div><div id="push3" style="position:absolute;inset:0"></div></div></div>
+      </div>
+    </div>
+
+    <div class="notes" style="max-width:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px 40px">
+      <div class="note key"><h4>鎖定畫面不會露出你是誰</h4><p>身分只存在 App 內。手機鎖定時一律顯示同一句通用文字，不出現好孕卡、身障、長照等字樣，避免在他人面前被看見。</p></div>
+      <div class="note key"><h4>規則只讀市民已經給過市府的資料</h4><p>卡別來自已綁定的市民卡，里別由市民自己設定。不調閱醫療紀錄或其他個資，規則本身可公開檢視。</p></div>
+      <div class="note"><h4>三個分類，各自可退訂</h4><p>福利提醒、社區活動、店家優惠分開控制，每月設推播則數上限。不想收就關掉，服務照樣辦得到。</p></div>
+      <div class="note"><h4>App 之外還有三條路</h4><p>官方 LINE、簡訊與里辦公處轉知同步補位。對不用智慧型手機的長者，推廣大使與關懷據點仍是主要管道。</p></div>
+    </div>
+
+    <div class="lockstrip" style="margin-top:28px">
+      <div style="font-size:12.5px;color:var(--ink-3);margin-bottom:9px">手機鎖定時，上面三個人收到的都是這一則</div>
+      <div class="nt"><span class="pd"></span><div><b>桃園市民卡</b><span>您有一則新的服務提醒</span></div><em>上午 9:12</em></div>
+    </div>
+
+    <figure style="margin-top:52px">
+      <svg viewBox="0 0 980 300" role="img" aria-label="好孕卡月齡推播時間軸：出生 2 個月提醒發育篩檢，6 個月提醒早療評估，1 歲提醒疫苗與育兒津貼續領，2 歲提醒公托與準公托抽籤。">
+        <g font-family="Noto Sans TC, sans-serif">
+          <line x1="70" y1="150" x2="910" y2="150" stroke="currentColor" stroke-opacity=".25" stroke-width="2"/>
+          <g>
+            <circle cx="70" cy="150" r="7" fill="currentColor" fill-opacity=".3"/>
+            <text x="70" y="182" text-anchor="middle" font-size="13" fill="currentColor" fill-opacity=".6">出生</text>
+            <text x="70" y="202" text-anchor="middle" font-size="11.5" fill="currentColor" fill-opacity=".45">領取一生好運卡</text>
+          </g>
+          <g>
+            <circle cx="280" cy="150" r="8" fill="#E8556E"/>
+            <line x1="280" y1="142" x2="280" y2="96" stroke="#E8556E" stroke-width="1.5"/>
+            <text x="280" y="86" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">2 個月</text>
+            <text x="280" y="64" text-anchor="middle" font-size="12.5" fill="currentColor" fill-opacity=".7">兒童發育篩檢提醒</text>
+            <text x="280" y="182" text-anchor="middle" font-size="11.5" fill="currentColor" fill-opacity=".45">衛生局</text>
+          </g>
+          <g>
+            <circle cx="490" cy="150" r="8" fill="#E8556E"/>
+            <line x1="490" y1="158" x2="490" y2="204" stroke="#E8556E" stroke-width="1.5"/>
+            <text x="490" y="226" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">6 個月</text>
+            <text x="490" y="248" text-anchor="middle" font-size="12.5" fill="currentColor" fill-opacity=".7">早療評估資源通知</text>
+            <text x="490" y="268" text-anchor="middle" font-size="11.5" fill="currentColor" fill-opacity=".45">教育局・社會局</text>
+          </g>
+          <g>
+            <circle cx="700" cy="150" r="8" fill="#E8556E"/>
+            <line x1="700" y1="142" x2="700" y2="96" stroke="#E8556E" stroke-width="1.5"/>
+            <text x="700" y="86" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">1 歲</text>
+            <text x="700" y="64" text-anchor="middle" font-size="12.5" fill="currentColor" fill-opacity=".7">疫苗與育兒津貼續領</text>
+            <text x="700" y="182" text-anchor="middle" font-size="11.5" fill="currentColor" fill-opacity=".45">婦幼發展局</text>
+          </g>
+          <g>
+            <circle cx="900" cy="150" r="8" fill="#E8556E"/>
+            <line x1="900" y1="158" x2="900" y2="204" stroke="#E8556E" stroke-width="1.5"/>
+            <text x="900" y="226" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">2 歲</text>
+            <text x="900" y="248" text-anchor="middle" font-size="12.5" fill="currentColor" fill-opacity=".7">公托與準公托抽籤</text>
+            <text x="900" y="268" text-anchor="middle" font-size="11.5" fill="currentColor" fill-opacity=".45">社會局</text>
+          </g>
+        </g>
+      </svg>
+      <figcaption>婦幼發展局於 2026/9/16 會議表示，已與社會局、智發會討論結合「一生好孕卡」資料，規劃依幼兒月齡進行階段性精準推播，上列節點即為該局提出之具體落地方向。臺北通「福利適算」已依身分資料自動試算並主動提醒，可為技術參照。</figcaption>
+    </figure>
+
+    <figure style="margin-top:52px">
+      <svg viewBox="0 0 980 260" role="img" aria-label="推播規則示意：卡別、居住里別、生命階段三項輸入進入規則比對，輸出為分類推播，並受每月則數上限與分類退訂限制。">
+        <g font-family="Noto Sans TC, sans-serif" fill="currentColor">
+          <g font-size="13.5">
+            <rect x="20" y="30" width="190" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".3"/><text x="115" y="58" text-anchor="middle">已綁定卡別</text>
+            <rect x="20" y="98" width="190" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".3"/><text x="115" y="126" text-anchor="middle">自設居住里別</text>
+            <rect x="20" y="166" width="190" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".3"/><text x="115" y="194" text-anchor="middle">生命階段（月齡／年齡）</text>
+          </g>
+          <g stroke="currentColor" stroke-opacity=".35" stroke-width="1.4" fill="none">
+            <path d="M210 53 H300 V121 H380"/><path d="M210 121 H380"/><path d="M210 189 H300 V121 H380"/>
+          </g>
+          <rect x="380" y="92" width="200" height="58" rx="10" fill="#E8556E" fill-opacity=".12" stroke="#E8556E"/>
+          <text x="480" y="117" text-anchor="middle" font-size="14.5" font-weight="700">規則比對</text>
+          <text x="480" y="138" text-anchor="middle" font-size="11.5" fill-opacity=".65">市民卡既有會員與身分驗證機制</text>
+          <g stroke="currentColor" stroke-opacity=".35" stroke-width="1.4" fill="none">
+            <path d="M580 121 H650 V53 H730"/><path d="M580 121 H730"/><path d="M580 121 H650 V189 H730"/>
+          </g>
+          <g font-size="13.5">
+            <rect x="730" y="30" width="230" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".3"/><text x="845" y="58" text-anchor="middle">福利提醒</text>
+            <rect x="730" y="98" width="230" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".3"/><text x="845" y="126" text-anchor="middle">社區活動</text>
+            <rect x="730" y="166" width="230" height="46" rx="8" fill="none" stroke="currentColor" stroke-opacity=".3"/><text x="845" y="194" text-anchor="middle">店家優惠</text>
+          </g>
+          <text x="845" y="238" text-anchor="middle" font-size="12" fill-opacity=".6">三類各自可退訂・每月設則數上限</text>
+          <text x="115" y="238" text-anchor="middle" font-size="12" fill-opacity=".6">不調閱醫療等其他個資</text>
+        </g>
+      </svg>
+      <figcaption>推播於綁卡時徵詢同意，採自願開啟。招標規格書另建議明定「市民卡 App 優先推播」條款，使推播由技術可行提升為採購制度層級之要求，避免因承辦單位更迭而中斷。</figcaption>
+    </figure>
+  </section>
+
+  <!-- ===== 04 授權管理 ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h2>同意之後，市民要能自己收回</h2>
+      <p>同意畫面只解決「進去」，授權管理解決「出來」。在既有的「我的卡證」分頁新增一項，列出所有已授權的局處系統、授權範圍與最近一次使用時間，每一筆都能單獨撤銷；推播分類開關也放在同一頁。</p>
+    </div>
+    <div class="split">
+      <div class="phone"><div class="screen-wrap"><div class="notch"></div><div id="authDemo" style="position:absolute;inset:0"></div></div></div>
+      <div class="notes">
+        <div class="note key"><h4>放在市民已經認得的地方</h4><p>「我的卡證」是市民卡 App 現有五個主要分頁之一，不需新增入口，也不必教長者記新位置。</p></div>
+        <div class="note"><h4>撤銷是單筆的</h4><p>撤銷圖書館不會連帶影響場地租借。每個局處系統各自持有自己的授權，符合最小必要與目的特定原則。</p></div>
+        <div class="note"><h4>資料流向看得到</h4><p>每一筆都標明哪一個局處、拿到哪些欄位、最近一次使用時間，讓授權不是一次性的黑箱。</p></div>
+        <div class="note"><h4>推播與授權同一頁</h4><p>市民在同一個畫面就能看到「誰拿到我的資料」和「誰能通知我」。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 05 技術 ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <h2>後端不動，只換前端的接法</h2>
+      <p>各局處既有系統保留不動，統一開發規範規範的是「怎麼被市民卡 App 接」。依整合成本由低到高、體驗由好到差排序，新建或改版的便民服務系統應依序採用。</p>
+    </div>
+    <div class="ladder">
+      <div class="rung r1"><span class="rk">優先</span><div><h4>App 內原生功能／API 整合</h4><p>局處提供 API，市民卡 App 以原生介面呈現。體驗最好，適合陳情通報、垃圾車查詢、補助資格比對等高頻且欄位單純的服務。</p></div></div>
+      <div class="rung"><span class="rk">其次</span><div><h4>App 內嵌瀏覽器（WebView）＋ SSO</h4><p>既有網站不必重寫，加上單一簽入與手機版介面即可內嵌。場地租借與圖書館借閱 POC 採此路徑，是短期內最務實的選項。</p></div></div>
+      <div class="rung r3"><span class="rk">例外</span><div><h4>外部瀏覽器跳轉</h4><p>僅限跨機關或涉及他機關認證之情形，且須完成手機版優化。現況的問題正是把例外當成預設。</p></div></div>
+    </div>
+
+    <figure style="margin-top:44px">
+      <svg viewBox="0 0 980 360" role="img" aria-label="市民卡 SSO 授權時序圖：App 向市民卡身分驗證服務請求授權，取得權杖後開啟內嵌瀏覽器，局處系統以權杖取回市民資料自動帶入表單，完成後回寫案件狀態。">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+        <g font-family="Noto Sans TC, sans-serif">
+          <rect x="20" y="16" width="200" height="40" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+          <text x="120" y="41" text-anchor="middle" font-size="14.5" font-weight="700" fill="currentColor">市民卡 App</text>
+          <line x1="120" y1="56" x2="120" y2="344" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="4 5"/>
+          <rect x="390" y="16" width="200" height="40" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+          <text x="490" y="41" text-anchor="middle" font-size="14.5" font-weight="700" fill="currentColor">市民卡身分驗證服務</text>
+          <line x1="490" y1="56" x2="490" y2="344" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="4 5"/>
+          <rect x="760" y="16" width="200" height="40" rx="8" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+          <text x="860" y="41" text-anchor="middle" font-size="14.5" font-weight="700" fill="currentColor">局處既有系統</text>
+          <line x1="860" y1="56" x2="860" y2="344" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="4 5"/>
+          <g stroke="currentColor" stroke-width="1.6" fill="none">
+            <line x1="120" y1="96" x2="482" y2="96" marker-end="url(#ah)"/>
+            <line x1="490" y1="140" x2="128" y2="140" marker-end="url(#ah)"/>
+            <line x1="120" y1="184" x2="482" y2="184" marker-end="url(#ah)"/>
+            <line x1="120" y1="228" x2="852" y2="228" marker-end="url(#ah)"/>
+            <line x1="860" y1="272" x2="498" y2="272" marker-end="url(#ah)"/>
+            <line x1="852" y1="316" x2="128" y2="316" marker-end="url(#ah)"/>
+          </g>
+          <g font-size="12.5" fill="currentColor" fill-opacity=".85">
+            <text x="128" y="88">① 市民點選服務，請求授權</text>
+            <text x="136" y="132">② 回傳同意畫面，市民勾選授權範圍後取得 code</text>
+            <text x="128" y="176">③ 以 code 兌換權杖</text>
+            <text x="128" y="220">④ 開啟 App 內嵌瀏覽器，附帶一次性登入票證（市民不需再輸入帳密）</text>
+            <text x="506" y="264">⑤ 驗證票證，取回姓名／電話／地址，表單自動帶入</text>
+            <text x="136" y="308">⑥ 申辦完成，回寫案件狀態至 App「我的申辦」並推播通知</text>
+          </g>
+        </g>
+      </svg>
+      <figcaption>採 OAuth 2.0／OpenID Connect 授權碼流程。市民卡作為身分提供者，局處系統作為信賴方；局處資料庫不必搬家，只需新增一組驗證端點。智發會於 2026/9/16 會議表示，若市府能訂定統一開發規範，將可大幅降低各局處介接市民卡 App 的技術門檻與溝通成本。</figcaption>
+    </figure>
+  </section>
+
+  <!-- ===== 06 盤點 ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06</span>
+      <h2>服務盤點與分階整合</h2>
+      <p>訪談與議會質詢點名的功能，依整合優先序分派路徑。第一階段先處理高頻且民眾抱怨最集中的項目，並建立失效連結與過期活動每月盤點下架機制。</p>
+    </div>
+    <table class="audit">
+      <thead><tr><th>服務</th><th>現況問題</th><th class="how">建議整合方式</th></tr></thead>
+      <tbody>
+        <tr><td>市政信箱陳情</td><td>已自動帶入個人資料，是現行少數好用的流程，應擴大到其他申辦</td><td class="how"><span class="a1">原生／API</span></td></tr>
+        <tr><td>路燈故障通報</td><td>跳轉養工處官網首頁，而非可輸入燈號的報修系統，民眾找不到入口</td><td class="how"><span class="a1">原生／API</span></td></tr>
+        <tr><td>垃圾車即時位置</td><td>點進去要求另外下載一支 App</td><td class="how"><span class="a1">原生／API</span></td></tr>
+        <tr><td>補助資格查詢與申辦</td><td>資格不明確，仍靠電話詢問與現場紙本；申請後查不到進度</td><td class="how"><span class="a1">原生／API</span></td></tr>
+        <tr><td>公共場地租借</td><td>跳轉外部系統需重新登入，介面不直覺，實務多靠里辦公處代辦</td><td class="how"><span class="a2">WebView＋SSO</span></td></tr>
+        <tr><td>圖書館館藏查詢與借閱</td><td>借閱證帳密與市民卡不互通，到期不會提醒</td><td class="how"><span class="a2">WebView＋SSO</span></td></tr>
+        <tr><td>育兒資源網</td><td>跳轉後與市民卡帳號未串聯</td><td class="how"><span class="a2">WebView＋SSO</span></td></tr>
+        <tr><td>衛生篩檢預約</td><td>各項篩檢分屬不同系統，未依身分主動告知</td><td class="how"><span class="a2">WebView＋SSO</span></td></tr>
+        <tr><td>大型家具回收、社大與長青學苑課程</td><td>分散在不同單位，有的只能現場報名</td><td class="how"><span class="a2">WebView＋SSO</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== 07 範圍 ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">07</span>
+      <h2>先做什麼，不做什麼</h2>
+      <p>MVP 的價值在於範圍夠小、能驗證、能被否證。以下是第一階段概念驗證的邊界。</p>
+    </div>
+    <div class="cols">
+      <div class="col"><h4>第一階段 POC</h4><ul>
+        <li>場地租借完整串接：查詢、身分驗證、線上預約、繳費、預約紀錄</li>
+        <li>即時顯示各時段預約狀態，不揭露申請人個資</li>
+        <li>一生好運卡依月齡推播三個節點</li>
+        <li>同意聲明、分項授權與授權管理頁</li>
+        <li>案件狀態回寫 App「我的申辦」</li>
+        <li>試辦里別 3 個，含義民里</li>
+      </ul></div>
+      <div class="col"><h4>同期要規範的</h4><ul>
+        <li>跨局處統一開發規範：新建或改版系統須提供 API 或支援 WebView＋SSO</li>
+        <li>招標規格書明定「市民卡 App 優先推播」條款</li>
+        <li>失效連結與過期活動每月盤點下架</li>
+        <li>短期無法內嵌者，外部頁面須完成手機版優化</li>
+        <li>開放里辦公處上架社區活動與招募學員之權限</li>
+      </ul></div>
+      <div class="col"><h4>本案不處理</h4><ul>
+        <li>福利卡數位虛擬化——已上線，不重複請求</li>
+        <li>敬老愛心卡點數、好孕專車補助額度等資格與額度調整，屬政策與財政議題</li>
+        <li>好孕專車叫不到車，屬車隊媒合量能問題</li>
+        <li>不新增卡別、不變動任何福利資格、無須修法</li>
+      </ul></div>
+    </div>
+    <div class="facts">
+      <div class="fact"><b>196 萬+</b><span>市民卡實體卡累計發行張數，居全台之冠</span><small>公視新聞網</small></div>
+      <div class="fact"><b>34 萬</b><span>App 下載量，活躍使用者約 23 萬名</span><small>聯合報 2026/4/18</small></div>
+      <div class="fact"><b>8.28%</b><span>2025 年首季一生好運卡點數使用率</span><small>自由時報 2026/3/20</small></div>
+      <div class="fact"><b>40.8%</b><span>家長不清楚自己符合哪些補助資格</span><small>《桃園親子通》問卷 n=51</small></div>
+    </div>
+  </section>
+
+  <footer>
+    <div><b>市民卡 2.1：福利卡個人化推播與市政服務單一入口優化</b>　提案委員 林立｜共同提案 吳尚融、李秉哲｜智慧生活組</div>
+    <div>主辦局處 智慧城鄉發展委員會｜協辦 婦幼發展局、社會局、衛生局、教育局、文化局、青年事務局、民政局與各區公所</div>
+    <div>對應 SDG 9、SDG 10、SDG 11、SDG 16</div>
+    <div class="disc">本頁為提案溝通用互動原型，非桃園市政府正式產品或官方介面。App 畫面依現行市民卡 App 重繪以利對照；示意之欄位、案件編號、系統網址、時段與推播內容均為虛構，卡號已遮蔽。</div>
+  </footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- 圖示 ---------- */
+var I={
+ find:'<path d="M3 9l9-5 9 5"/><path d="M5 9v9M19 9v9M3 19h18"/>',
+ mail:'<path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/>',
+ pay:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M10 9h4M10 13h4"/>',
+ hall:'<path d="M4 10l8-6 8 6v10H4z"/><path d="M9 20v-6h6v6"/>',
+ book:'<path d="M5 4h9a2 2 0 012 2v14H7a2 2 0 01-2-2z"/><path d="M16 4h3v16h-3"/>',
+ trash:'<path d="M5 7h14"/><path d="M8 7V5h8v2"/><path d="M6 7l1 13h10l1-13"/>',
+ heart:'<path d="M12 21s-7-4.5-7-9a4 4 0 017-2.6A4 4 0 0119 12c0 4.5-7 9-7 9z"/>',
+ coin:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10h5M9.5 14h5"/>',
+ lamp:'<path d="M12 3v2M5 12H3M21 12h-2M6 6L4.5 4.5M18 6l1.5-1.5"/><circle cx="12" cy="13" r="4"/><path d="M10 19h4"/>',
+ bus:'<path d="M5 5h14v10H5z"/><path d="M5 15v3M19 15v3M8 8h8"/>'
+};
+function svg(p,c){return '<svg viewBox="0 0 24 24">'+p+'</svg>';}
+
+/* ---------- 共用片段 ---------- */
+function nav(on){
+  var items=[['桃園首頁','<path d="M4 11l8-7 8 7v8H4z"/>'],['市府服務','<path d="M4 6h16v13H4z"/><path d="M9 19v-5h6v5"/>'],
+             ['市民生活','<path d="M5 8h11v7H5z"/><path d="M16 10h3v3h-3"/>'],['消費優惠','<path d="M5 9h14v10H5z"/><path d="M9 9V6h6v3"/>'],
+             ['我的卡證','<path d="M4 7h16v11H4z"/><path d="M4 11h16"/>']];
+  return '<div class="app-nav">'+items.map(function(it){
+    return '<div class="'+(it[0]===on?'on':'')+'"><div class="ni">'+svg(it[1])+'</div>'+it[0]+'</div>';
+  }).join('')+'</div>';
+}
+function header(title,greet){
+  return '<div class="app-top"><h4>'+title+'</h4><span class="bell">🔔</span>'+(greet||'')+'</div>';
+}
+var GREET='<div class="greet"><div class="avatar"><i></i></div><div class="nm">你好，林立</div>'+
+  '<div class="wx"><div>溫度<b>29-32°C</b></div><div>降雨機率<b>0%</b></div><div>空氣品質<b>普通</b></div></div></div>';
+
+/* ---------- 畫面樣板 ---------- */
+var T={
+ home:function(){
+   return '<div class="app">'+header('桃園首頁',GREET)+
+     '<div class="app-body"><div class="banner"><div class="b1">桃城智慧行</div>'+
+     '<div class="b2">完成任 3 關抽大獎</div><div class="b3">打開 APP 完成報名！</div><div class="b4">廣告</div></div>'+
+     '<p class="bcap">「桃城智慧行－任 3 關抽大獎」－第一關：活動輕鬆報</p>'+
+     '<div class="sec-t" style="margin-top:12px">常用功能</div><div class="quick">'+
+     '<div><div class="qi">'+svg('<path d="M4 7h11v12H4z"/><path d="M8 4h11v12"/>')+'</div>集章活動</div>'+
+     '<div><div class="qi">'+svg(I.pay)+'</div>發票紀錄</div>'+
+     '<div><div class="qi">'+svg('<path d="M4 20l4-1 11-11-3-3L5 16z"/>')+'</div>手登發票</div>'+
+     '<div><div class="qi">'+svg('<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>')+'</div>發票掃描</div>'+
+     '</div></div>'+nav('桃園首頁')+'</div>';
+ },
+ list:function(s){
+   return '<div class="app">'+header(s.title)+'<div class="app-body" style="padding-top:12px">'+
+     s.items.map(function(it){
+       return '<div class="srv'+(it.hot?' hot':'')+'"><div class="si">'+svg(I[it.icon])+'</div>'+
+         '<div class="st"><b>'+it.name+'</b><small>'+it.desc+'</small></div><div class="sa">›</div></div>';
+     }).join('')+'</div>'+nav(s.nav||'市府服務')+'</div>';
+ },
+ ext:function(s){
+   return '<div class="ext"><div class="ext-bar"><div class="url">🌐 '+s.url+'</div></div>'+
+     (s.ad?'<div class="ext-ad"><span>'+s.ad+'</span><span>✕</span></div>':'')+
+     '<div class="ext-page"><div class="ext-gov">'+s.gov+'</div>'+
+     (s.tabs?'<div class="ext-nav">'+s.tabs.map(function(t){return '<span>'+t+'</span>';}).join('')+'</div>':'')+
+     (s.cols?'<div class="ext-cols">'+s.cols.map(function(c){return '<div>'+c+'</div>';}).join('')+'</div>':'')+
+     (s.cols2?'<div class="ext-cols">'+s.cols2.map(function(c){return '<div>'+c+'</div>';}).join('')+'</div>':'')+
+     (s.note?'<p class="ext-note">'+s.note+'</p>':'')+
+     '</div></div>'+(s.pinch?'<span class="pinch">'+s.pinch+'</span>':'');
+ },
+ extform:function(s){
+   return '<div class="ext"><div class="ext-bar"><div class="url">🌐 '+s.url+'</div></div>'+
+     (s.ad?'<div class="ext-ad"><span>'+s.ad+'</span><span>✕</span></div>':'')+
+     '<div class="ext-page"><div class="ext-gov">'+s.gov+'</div><div class="ext-form">'+
+     s.fields.map(function(f){return '<label>'+f+'</label><div class="fi"></div>';}).join('')+
+     '<div class="ext-btn">'+(s.btn||'送出')+'</div>'+
+     (s.note?'<p class="ext-note">'+s.note+'</p>':'')+
+     '</div></div></div>';
+ },
+ goog:function(s){
+   return '<div class="goog"><div class="q">🔍 '+s.q+'</div>'+
+     s.rs.map(function(r){return '<div class="r"><em>'+r[0]+'</em><b>'+r[1]+'</b><span>'+r[2]+'</span></div>';}).join('')+
+     '</div>';
+ },
+ store:function(s){
+   return '<div class="store"><div style="font-size:11px;color:#888;text-align:left">‹ 返回市民卡</div>'+
+     '<div class="ic">♻</div><b>'+s.name+'</b><small>'+s.by+'</small>'+
+     '<div class="get">取得</div><p style="font-size:10.5px;color:#9E4A3C;margin-top:18px;line-height:1.7">'+s.note+'</p></div>';
+ },
+ call:function(s){
+   return '<div class="call"><div class="av">☎</div><b>'+s.to+'</b><small>'+s.sub+'</small>'+
+     '<div class="hint2">'+s.note+'</div></div>';
+ },
+ paper:function(s){
+   return '<div class="paper"><div class="sheet"><h6>'+s.title+'</h6>'+
+     s.fields.map(function(f){return f+'<div class="ln"></div>';}).join('')+
+     '</div><p style="font-size:10px;color:#6B5B60;margin:10px 2px 0;line-height:1.6">'+s.note+'</p></div>';
+ },
+ consent:function(s){
+   return '<div class="consent"><div class="consent-bar"><span class="bk">‹</span> 個人資料使用同意</div>'+
+     '<div class="consent-body"><div class="consent-card"><div class="consent-head">'+
+     '<div class="bub"><svg viewBox="0 0 24 24"><path d="M4 6h16v10H9l-4 4z"/><path d="M8 10h8M8 13h5"/></svg></div>'+
+     '<div><h5>'+s.service+'</h5><small>個資使用聲明</small></div></div>'+
+     '<p>依據個人資料保護法等相關規定，桃園市政府有義務告知以下事項：</p>'+
+     '<p>為提供更快速、便利之服務，您在市民卡 App 內使用「'+s.system+'」時，將透過市民卡單一簽入（SSO）機制，提供您的市民卡會員資料至該系統（主管機關：'+s.dept+'），其個人資料利用之期間、對象、地區及方式，皆以該系統或該單位的「隱私權公告」為主。</p>'+
+     '<p><b>本次將提供的資料：</b></p><div class="scope">'+
+     s.scopes.map(function(r){
+       return '<div class="scope-row"><span class="sw'+(r[2]?' off':'')+'"></span><span class="sl"><b>'+r[0]+'</b><span>'+r[1]+'</span></span></div>';
+     }).join('')+'</div>'+
+     '<p>本次蒐集之個人資訊，僅限於本次'+s.service+'申辦使用，並遵守個人資料保護法相關規定，保障使用者的個資。</p>'+
+     '<p>您可隨時於「我的卡證 → 服務授權管理」查看或撤銷本次授權。撤銷後仍可循原有臨櫃與紙本管道辦理。</p>'+
+     '<p>如有使用問題，請撥打 1999 市民熱線。</p></div></div>'+
+     '<div class="consent-foot"><div class="agree"><span class="box ck"></span><span>本人已詳閱並同意以上條款個資使用聲明</span></div>'+
+     '<div class="btn-lg">同意並繼續</div></div></div>';
+ },
+ sso:function(s){
+   return '<div class="load"><div><div class="ring"></div><b>正在以市民卡身分登入</b>'+
+     '<small>'+s.system+'<br>不需要再輸入一次帳號密碼</small>'+
+     '<div class="mono">GET /oauth2/authorize?scope=profile<br>→ code → POST /oauth2/token<br>→ id_token · access_token</div></div></div>';
+ },
+ panel:function(s){
+   var bar = s.mode==='webview'
+     ? '<div class="wv-bar"><div class="r1"><span class="x">✕</span> '+s.title+'</div><div class="r2">✓ 已以市民卡身分登入　林立</div></div>'
+     : '<div class="wv-bar"><div class="r1"><span class="x">‹</span> '+s.title+'</div><div class="r2">✓ 市民卡 App 內原生功能</div></div>';
+   return '<div class="wv">'+bar+'<div class="wv-body">'+s.rows.map(row).join('')+
+     (s.btn?'<div class="btn-lg" style="margin-top:4px">'+s.btn+'</div>':'')+'</div></div>';
+ },
+ done:function(s){
+   return '<div class="app">'+header(s.title)+'<div class="app-body" style="padding-top:6px"><div class="done">'+
+     '<div class="tick'+(s.ok?'':' bad')+'">'+(s.ok?'✓':'!')+'</div>'+
+     '<h5>'+s.h+'</h5><p class="sub">'+s.sub+'</p>'+
+     (s.push?'<div class="push"><div class="pd"></div><div><b>'+s.push[0]+'</b><span>'+s.push[1]+'</span></div></div>':'')+
+     (s.quote?'<div class="push q"><div class="pd"></div><div><b>'+s.quote[0]+'</b><span>'+s.quote[1]+'</span></div></div>':'')+
+     '</div></div>'+nav(s.nav||'市府服務')+'</div>';
+ },
+ notif:function(s){
+   return '<div class="app">'+header('通知')+'<div class="app-body scrolly" style="padding-top:12px">'+
+     '<div style="font-size:11.5px;color:#8E1B33;margin:0 2px 10px">2026 年 10 月 18 日</div>'+
+     s.items.map(function(n){
+       return '<div class="ncard"><div class="ttl"><i></i>'+n[0]+'</div><p>'+n[1]+'</p>'+
+         (n[2]?'<span class="act">'+n[2]+'</span>':'')+'<span class="when">'+n[3]+'</span></div>';
+     }).join('')+
+     '<p style="font-size:10.5px;color:#9A8F93;margin:4px 2px 0;line-height:1.7">'+s.foot+'</p>'+
+     '</div>'+nav('桃園首頁')+'</div>';
+ },
+ auth:function(){
+   function item(n,d,w){
+     return '<div class="card" style="padding:12px"><b style="font-size:14px">'+n+'</b>'+
+       '<div style="font-size:11px;color:#6B5B60;margin:4px 0 8px;line-height:1.6">'+d+'<br>最近使用：'+w+'</div>'+
+       '<div style="display:flex;gap:8px">'+
+       '<span style="flex:1;text-align:center;font-size:11.5px;border:1px solid #E8556E;color:#E8556E;border-radius:8px;padding:5px">撤銷授權</span>'+
+       '<span style="flex:1;text-align:center;font-size:11.5px;border:1px solid #E1E5E9;color:#6B5B60;border-radius:8px;padding:5px">調整範圍</span></div></div>';
+   }
+   return '<div class="app">'+header('我的卡證','<div class="greet"><div class="avatar"><i></i></div><div class="nm">你好，林立<br><span style="font-size:11px;opacity:.9">學生普通卡・卡號 9134 32** **** 1242</span></div></div>')+
+     '<div class="app-body scrolly" style="padding-top:12px"><div class="sec-t">服務授權管理</div>'+
+     item('公共場地租借系統','民政局｜姓名、身分證字號、手機、電子信箱','2026/10/18')+
+     item('圖書館借閱查詢','文化局｜姓名、借閱證號','2026/10/02')+
+     item('衛生篩檢預約','衛生局｜姓名、身分證字號、手機','2026/09/26')+
+     '<div class="sec-t" style="margin-top:14px">推播分類</div><div class="card" style="padding:12px">'+
+     '<div class="scope-row" style="border-color:#F0E4E7"><span class="sw" style="background:#E8556E"></span><span class="sl"><b>福利提醒</b><span>依持有卡別推播，每月上限 4 則</span></span></div>'+
+     '<div class="scope-row" style="border-color:#F0E4E7"><span class="sw" style="background:#E8556E"></span><span class="sl"><b>社區活動</b><span>依居住里別推播</span></span></div>'+
+     '<div class="scope-row"><span class="sw off"></span><span class="sl"><b>店家優惠</b><span>已關閉</span></span></div>'+
+     '</div></div>'+nav('我的卡證')+'</div>';
+ }
+};
+
+function row(r){
+  if(r.t==='field') return '<div class="field"><label>'+r.l+'</label><div class="v"><span>'+r.v+'</span>'+(r.auto?'<small>自動帶入</small>':'')+'</div></div>';
+  if(r.t==='slots') return '<div class="field"><label>'+r.l+'</label><div class="slots">'+r.v.map(function(s){
+      return '<span class="'+(s[1]||'')+'">'+s[0]+'</span>';}).join('')+'</div></div>';
+  if(r.t==='elig') return '<div class="elig"><span class="tag '+r.k+'">'+r.tag+'</span><b>'+r.l+'</b><span>'+r.v+'</span></div>';
+  if(r.t==='map') return '<div class="mapbox">'+
+      '<div class="road" style="left:0;top:52px;width:100%;height:9px"></div>'+
+      '<div class="road" style="left:96px;top:0;width:9px;height:100%"></div>'+
+      '<div class="road" style="left:0;top:96px;width:100%;height:6px"></div>'+
+      '<div class="pin" style="left:120px;top:32px;background:#2E7D32"><span style="transform:rotate(45deg)">♻</span></div>'+
+      '<div class="me" style="left:60px;top:88px"></div>'+
+      '<div style="position:absolute;right:7px;bottom:6px;font-size:9.5px;background:rgba(255,255,255,.9);border-radius:5px;padding:2px 7px;color:#2E7D32;font-weight:700">'+r.v+'</div></div>';
+  if(r.t==='photo') return '<div class="photo'+(r.has?' has':'')+'">'+r.v+'</div>';
+  if(r.t==='note') return '<p style="font-size:10.5px;color:#6B747C;line-height:1.7;margin:2px 0 10px">'+r.v+'</p>';
+  if(r.t==='head') return '<div style="font-size:13px;font-weight:700;margin:4px 0 8px">'+r.v+'</div>';
+  return '';
+}
+
+/* ---------- 各情境的服務清單 ---------- */
+var SRV_GOV=function(hot){return {title:'市府服務',nav:'市府服務',items:[
+  {icon:'find',name:'找服務',desc:'提供對應桃園 e 指通網站的服務',hot:hot==='find'},
+  {icon:'mail',name:'我想陳情',desc:'市政信箱、路燈故障通報、查詢市政信箱案件',hot:hot==='mail'},
+  {icon:'pay',name:'我要繳費',desc:'停車費、規費查繳、罰鍰查繳、地方稅即查繳…',hot:hot==='pay'},
+  {icon:'hall',name:'場地租借',desc:'桃園場地租借、創新創業場地租借、婦女館…',hot:hot==='hall'}
+]};};
+var SRV_LIFE=function(hot){return {title:'市民生活',nav:'市民生活',items:[
+  {icon:'book',name:'圖書館',desc:'館藏查詢、線上預約、借閱紀錄',hot:hot==='book'},
+  {icon:'trash',name:'垃圾車即時位置',desc:'清運路線、到點時間查詢',hot:hot==='trash'},
+  {icon:'heart',name:'健康服務',desc:'成人健檢、癌症篩檢、疫苗預約',hot:hot==='heart'},
+  {icon:'bus',name:'公車與 Ubike',desc:'即時動態、站點查詢',hot:hot==='bus'}
+]};};
+
+/* ---------- 情境資料 ---------- */
+var SCN=[
+{
+ id:'hall', label:'場地租借', sub:'民政局／區公所',
+ task:'向區公所線上借用集會所',
+ src:'受訪者三（在地里長）：場地租借依規定須以市民卡辦理，但要頻繁跳轉、介面不直覺，實務上多半要靠里辦公處協助才能完成。',
+ hdNow:'巢狀跳轉', hdNew:'WebView＋SSO',
+ now:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市府服務」，點選場地租借。',s:{f:'list',d:SRV_GOV('hall')},m:[0,0,0]},
+  {t:'跳到外部瀏覽器，網頁沒有手機版，還夾帶廣告。',badge:['bad','已離開 App','tr'],m:[1,0,0],
+   s:{f:'ext',d:{url:'booking.example-gov.tw/hall/index.jsp',ad:'廣告｜立即申辦信用卡 享 5% 回饋',gov:'桃園市公共場地租借系統',
+      tabs:['首頁','最新消息','場地查詢','線上預約','常見問答','下載專區'],
+      cols:['公告：系統將於每週三凌晨進行例行維護。','表單下載：集會所借用申請書（ODT／DOC）','聯絡窗口：各區公所民政課'],
+      cols2:['場地查詢','線上預約','預約紀錄'],pinch:'網頁未做手機版，需放大縮小'}}},
+  {t:'外部系統帳號與市民卡不互通，必須重新登入。長者久未使用多半已忘記密碼。',badge:['bad','第 1 次重新登入','tr'],m:[1,1,0],
+   s:{f:'extform',d:{url:'booking.example-gov.tw/hall/login.jsp',gov:'會員登入',fields:['帳號（身分證字號）','密碼','驗證碼'],btn:'登入',
+      note:'※ 本系統帳號與桃園市民卡帳號不互通。'}}},
+  {t:'姓名、身分證字號、電話、地址等欄位全部重打一次。',badge:['bad','手動填寫 12 欄','tr'],m:[1,1,12],
+   s:{f:'extform',d:{url:'booking.example-gov.tw/hall/apply.jsp',gov:'集會所借用申請',
+      fields:['申請人姓名','身分證字號','出生年月日（西元）','行動電話','電子信箱','通訊地址','使用單位','活動名稱／使用人數'],btn:'下一步'}}},
+  {t:'要繳費又跳到另一個平台，再登入一次。',badge:['bad','再跳一次＋第 2 次登入','tr'],m:[2,2,12],
+   s:{f:'extform',d:{url:'epay.example-gov.tw/pay/order',ad:'廣告｜下載 XX 錢包 APP 新戶送 100 元',gov:'規費線上繳納平台',
+      fields:['帳號','密碼'],btn:'登入並繳費',note:'※ 請先登入本平台帳號以完成繳費。'}}},
+  {t:'申請完成了，但回到 App 查不到這筆紀錄。',m:[2,2,12],
+   s:{f:'done',d:{ok:0,title:'市府服務',h:'申請已送出，但不在 App 裡',
+      sub:'案件進度、繳費證明與核准通知都留在外部系統，回到市民卡 App 查不到這筆申辦紀錄。',
+      quote:['受訪者三（里長）','「一直跳轉外部網頁非常愚蠢，應該把常使用的功能直接整合在 App 內處理。」']}}}
+ ],
+ pro:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市府服務」，點選場地租借。',s:{f:'list',d:SRV_GOV('hall')},m:[0,0,0]},
+  {t:'首次使用出現個資使用聲明，寫明提供哪些欄位給哪一個系統，選用欄位可關閉。',badge:['good','首次使用才出現','tr'],m:[0,0,0],
+   s:{f:'consent',d:{service:'場地租借',system:'公共場地租借系統',dept:'民政局',
+      scopes:[['姓名、身分證字號','驗證申請人身分，必要',0],['手機號碼、電子信箱','接收審核結果，必要',0],['通訊地址','寄送紙本核准函，可關閉',1]]}}},
+  {t:'以市民卡身分單一簽入，不必再輸入帳號密碼。',m:[0,0,0],s:{f:'sso',d:{system:'公共場地租借系統'}}},
+  {t:'租借系統在 App 內嵌瀏覽器開啟，個人欄位自動帶入，時段即時、可直接線上繳費。',badge:['good','仍在 App 內','tr'],m:[0,0,0],
+   s:{f:'panel',d:{mode:'webview',title:'場地租借',btn:'送出申請並繳費',rows:[
+      {t:'field',l:'申請人',v:'林　立',auto:1},{t:'field',l:'行動電話',v:'09** *** 128',auto:1},
+      {t:'field',l:'使用單位',v:'桃園區義民里辦公處',auto:1},{t:'field',l:'借用場地',v:'義民里集會所'},
+      {t:'slots',l:'10 月 18 日 可借用時段（即時）',v:[['09-11','full'],['13-15','pick'],['15-17',''],['19-21','']]},
+      {t:'field',l:'規費',v:'新臺幣 300 元',auto:0}]}}},
+  {t:'完成申辦，案件進度留在 App「我的申辦」，並推播受理通知。',m:[0,0,0],
+   s:{f:'done',d:{ok:1,title:'我的申辦',h:'申請已送出',sub:'案件編號 TY-1141018-0072<br>進度、繳費紀錄與核准通知都留在 App 內。',
+      push:['桃園市民卡','您有一則新的服務提醒：義民里集會所借用申請已受理，預計 2 個工作天內完成審核。']}}}
+ ]
+},
+{
+ id:'lamp', label:'路燈故障通報', sub:'養工處／市政信箱',
+ task:'通報住家巷口的路燈不亮',
+ src:'受訪者二：點選「路燈故障通報」會直接跳轉到養工處官網首頁，而不是可以直接輸入燈號定位報修的智慧路燈系統，民眾找不到報修入口。',
+ hdNow:'跳錯地方', hdNew:'原生功能／API',
+ now:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市府服務」，點選我想陳情裡的路燈故障通報。',s:{f:'list',d:SRV_GOV('mail')},m:[0,0,0]},
+  {t:'跳出去之後落在養工處官網首頁，不是報修系統。',badge:['bad','跳到首頁，不是報修頁','tr'],m:[1,0,0],
+   s:{f:'ext',d:{url:'gcd.example-gov.tw/index.php',gov:'桃園市政府養護工程處',
+      tabs:['機關介紹','最新消息','業務職掌','便民服務','政府資訊公開','相關連結'],
+      cols:['本處辦理道路、橋梁、路燈及排水設施之養護工程。','最新消息：114 年度道路養護工程招標公告','便民服務：表單下載、常見問答'],
+      pinch:'桌面版網頁，字很小'}}},
+  {t:'在官網裡一層層翻，找不到可以輸入燈號的地方。',badge:['bad','找不到入口','tr'],m:[1,0,0],
+   s:{f:'ext',d:{url:'gcd.example-gov.tw/service/list.php',gov:'便民服務',
+      cols:['表單下載','常見問答','陳情信箱'],cols2:['道路挖掘','橋梁維護','路燈管理'],
+      note:'※「路燈管理」點進去是業務說明頁，沒有報修表單。'}}},
+  {t:'最後還是退出來用 Google 搜尋，才找到真正的報修系統。',badge:['bad','第 2 次離開 App','tr'],m:[2,0,0],
+   s:{f:'goog',d:{q:'桃園 路燈 報修 燈號',rs:[
+      ['smartlight.example-gov.tw','桃園市智慧路燈維修通報系統','輸入燈桿編號即可通報，並查詢修復進度。'],
+      ['gcd.example-gov.tw','養護工程處－路燈管理','本市路燈養護作業說明與相關法規。'],
+      ['news.example.com','里長怨路燈報修找嘸入口 市府：可撥 1999']]}}},
+  {t:'在報修系統再把姓名、電話、地點、燈號打一次。',badge:['bad','手動填寫 6 欄','tr'],m:[2,0,6],
+   s:{f:'extform',d:{url:'smartlight.example-gov.tw/report',gov:'智慧路燈維修通報',
+      fields:['燈桿編號','故障地點','故障情形','通報人姓名','聯絡電話','電子信箱'],btn:'送出通報'}}},
+  {t:'通報完成，案件編號要自己抄下來，App 查不到進度。',m:[2,0,6],
+   s:{f:'done',d:{ok:0,title:'市府服務',h:'通報完成，但進度要自己追',
+      sub:'案件編號只出現在外部網站的完成畫面，回到市民卡 App 沒有任何紀錄。',
+      quote:['受訪者二','「如果只是入口不如用 Google 搜尋。」']}}}
+ ],
+ pro:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市府服務」，點選我想陳情裡的路燈故障通報。',s:{f:'list',d:SRV_GOV('mail')},m:[0,0,0]},
+  {t:'直接在 App 內開啟通報表單。市政信箱本來就會自動帶入個資，這個做法擴大到所有申辦流程。',badge:['good','同一個 App，免授權','tr'],m:[0,0,0],
+   s:{f:'panel',d:{mode:'native',title:'路燈故障通報',btn:'送出通報',rows:[
+      {t:'note',v:'同屬市民卡 App 內原生功能，不涉及跨系統授權，不需另行同意。'},
+      {t:'field',l:'故障位置（自動定位）',v:'桃園區義民路二段 158 號前',auto:1},
+      {t:'field',l:'最近燈桿編號',v:'TY-A03-1172',auto:1},
+      {t:'photo',has:1,v:'已附上現場照片'},
+      {t:'field',l:'通報人',v:'林　立',auto:1},
+      {t:'field',l:'聯絡電話',v:'09** *** 128',auto:1}]}}},
+  {t:'通報完成，案件進度留在 App，派工與修復都會推播。',m:[0,0,0],
+   s:{f:'done',d:{ok:1,title:'我的申辦',h:'通報已受理',sub:'案件編號 LT-1141018-0311<br>派工與修復完成都會主動通知你。',
+      push:['桃園市民卡','您有一則新的服務提醒：您通報的路燈已完成派工，預計 3 個工作天內修復。']}}}
+ ]
+},
+{
+ id:'book', label:'圖書館借閱', sub:'文化局',
+ task:'預約一本書並查詢借閱紀錄',
+ src:'受訪者二：使用圖書館線上預約查詢；受訪者三：跳轉出去的外部系統經常需要重複登入、未與市民卡帳號串聯。',
+ hdNow:'另一套帳密', hdNew:'WebView＋SSO',
+ now:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市民生活」，點選圖書館。',s:{f:'list',d:SRV_LIFE('book')},m:[0,0,0]},
+  {t:'跳到圖書館的桌面版網站。',badge:['bad','已離開 App','tr'],m:[1,0,0],
+   s:{f:'ext',d:{url:'library.example-gov.tw/webpac/',gov:'桃園市立圖書館 館藏查詢',
+      tabs:['簡易查詢','進階查詢','新書通報','借閱排行','個人服務'],
+      cols:['查詢結果：《照護的邏輯》　中壢分館　在架上','《照顧年邁父母》　龍潭分館　已借出'],
+      pinch:'桌面版網頁，需放大縮小'}}},
+  {t:'要預約就得登入借閱證帳密，和市民卡不是同一組。',badge:['bad','第 1 次重新登入','tr'],m:[1,1,0],

@@ -998,3 +998,220 @@ var SCN=[
       cols:['查詢結果：《照護的邏輯》　中壢分館　在架上','《照顧年邁父母》　龍潭分館　已借出'],
       pinch:'桌面版網頁，需放大縮小'}}},
   {t:'要預約就得登入借閱證帳密，和市民卡不是同一組。',badge:['bad','第 1 次重新登入','tr'],m:[1,1,0],
+   s:{f:'extform',d:{url:'library.example-gov.tw/webpac/login',gov:'讀者登入',
+      fields:['借閱證號','密碼（預設為生日）','驗證碼'],btn:'登入',
+      note:'※ 借閱證號非市民卡卡號，密碼與市民卡帳號不互通。'}}},
+  {t:'預約成功，但到期日只寫在網站上。',badge:['bad','手動填寫 4 欄','tr'],m:[1,1,4],
+   s:{f:'extform',d:{url:'library.example-gov.tw/webpac/reserve',gov:'預約登記',
+      fields:['取書館別','預約到館通知信箱','聯絡電話','備註'],btn:'確認預約'}}},
+  {t:'書到期忘記還，App 不會提醒，被罰逾期費。',m:[1,1,4],
+   s:{f:'done',d:{ok:0,title:'市民生活',h:'預約成功，之後就沒下文了',nav:'市民生活',
+      sub:'到期日與預約到館通知都留在圖書館系統，市民卡 App 不會提醒。',
+      quote:['受訪者四','「希望增加主動推播功能，讓民眾能收到與自己相關的活動與訊息通知。」']}}}
+ ],
+ pro:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市民生活」，點選圖書館。',s:{f:'list',d:SRV_LIFE('book')},m:[0,0,0]},
+  {t:'同意聲明只揭露圖書館真正需要的兩個欄位：姓名與借閱證號。',badge:['good','僅兩個欄位','tr'],m:[0,0,0],
+   s:{f:'consent',d:{service:'圖書館借閱',system:'桃園市立圖書館借閱系統',dept:'文化局',
+      scopes:[['姓名','核對讀者身分，必要',0],['借閱證號（由市民卡帶出）','查詢與預約館藏，必要',0],['電子信箱','預約到館通知，可關閉',1]]}}},
+  {t:'以市民卡身分登入，借閱證號直接由卡片帶出。',m:[0,0,0],s:{f:'sso',d:{system:'桃園市立圖書館借閱系統'}}},
+  {t:'在 App 內查詢與預約，借閱中書籍與到期日一起顯示。',badge:['good','仍在 App 內','tr'],m:[0,0,0],
+   s:{f:'panel',d:{mode:'webview',title:'圖書館',btn:'預約到中壢分館',rows:[
+      {t:'head',v:'《照護的邏輯》'},
+      {t:'field',l:'館藏狀態',v:'中壢分館 在架上'},
+      {t:'field',l:'讀者',v:'林　立（借閱證 **0412）',auto:1},
+      {t:'head',v:'借閱中'},
+      {t:'field',l:'《照顧年邁父母》',v:'10/24 到期'},
+      {t:'field',l:'《設計的品格》',v:'11/02 到期'}]}}},
+  {t:'預約成功，到期前三天與預約到館都會推播。',m:[0,0,0],
+   s:{f:'done',d:{ok:1,title:'我的申辦',h:'已完成預約',sub:'取書館別：中壢分館<br>到館與到期提醒都會主動通知。',
+      push:['桃園市民卡','您有一則新的服務提醒：您借閱的書籍將於 3 日後到期，可於 App 內線上續借。']}}}
+ ]
+},
+{
+ id:'aid', label:'補助資格與申辦', sub:'社會局／衛生局',
+ task:'查自己符合哪些補助，並完成申辦',
+ src:'受訪者三：民眾對補助申辦資格不清楚，多半還是要打電話詢問、現場填寫紙本，缺乏線上自動比對機制。《桃園親子通》問卷：40.8% 不清楚自己符合哪些補助，30.6% 申請後不知道進度。',
+ hdNow:'打電話問', hdNew:'自動資格比對',
+ now:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'在「找服務」裡翻，不確定自己符合哪一項。',s:{f:'list',d:SRV_GOV('find')},m:[0,0,0]},
+  {t:'跳到局處公告頁，滿滿法規條文，看完還是不確定資格。',badge:['bad','已離開 App','tr'],m:[1,0,0],
+   s:{f:'ext',d:{url:'sab.example-gov.tw/news/detail.php?id=4821',gov:'桃園市政府社會局 公告',
+      cols:['一、申請人應設籍本市連續六個月以上。','二、家庭總收入平均分配全家人口每人每月未超過…','三、應檢附戶籍謄本、收入證明、存摺封面影本…'],
+      pinch:'條文很長，仍不確定自己符不符合'}}},
+  {t:'只好打電話問承辦人。',badge:['bad','回到電話與臨櫃','tr'],m:[1,0,0],
+   s:{f:'call',d:{to:'區公所社會課',sub:'撥號中…',note:'「民眾對補助申辦資格不清楚，多半還是要打電話詢問。」—— 受訪者三'}}},
+  {t:'承辦人請你帶證件到現場填紙本。',m:[1,0,14],badge:['bad','手動填寫 14 欄','tr'],
+   s:{f:'paper',d:{title:'桃園市政府補助申請書',fields:['申請人姓名','身分證統一編號','戶籍地址','通訊地址','聯絡電話','家庭成員人數','檢附文件'],
+      note:'需另外準備戶籍謄本、收入證明與存摺影本，並親自送件。'}}},
+  {t:'送件之後不知道審到哪裡，只能再打電話。',m:[1,0,14],
+   s:{f:'done',d:{ok:0,title:'市府服務',h:'送件了，然後呢',
+      sub:'《桃園親子通》家長問卷：54.9% 完成一項申請需一天以上，30.6% 申請後不知道進度。',
+      quote:['問卷回饋','名額釋出等主動提醒獲 97.0% 支持、零人反對。']}}}
+ ],
+ pro:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「找服務」裡的我的補助專區。',s:{f:'list',d:SRV_GOV('find')},m:[0,0,0]},
+  {t:'依持有卡別與設籍資料自動比對，直接告訴你符合哪些、缺什麼。參考臺北通「福利適算」與新竹市數位申辦平台作法。',badge:['good','自動資格比對','tr'],m:[0,0,0],
+   s:{f:'panel',d:{mode:'native',title:'我的補助',btn:'申辦育兒津貼',rows:[
+      {t:'note',v:'依您已綁定的一生好運卡與設籍資料比對，資料來源限於您已提供給市府的資訊。'},
+      {t:'elig',k:'y',tag:'符合',l:'育兒津貼（0-5 歲）',v:'每月 5,000 元，可直接線上申辦'},
+      {t:'elig',k:'y',tag:'符合',l:'兒童發育篩檢補助',v:'幼兒滿 6 個月，可預約鄰近合約院所'},
+      {t:'elig',k:'m',tag:'需補件',l:'中低收入戶生活補助',v:'尚需上傳最近一年所得證明'},
+      {t:'elig',k:'n',tag:'不符合',l:'敬老愛心卡加值',v:'未達 65 歲，不再向您推播此類訊息'}]}}},
+  {t:'申辦表單自動帶入，佐證文件直接拍照上傳。',badge:['good','免重複輸入','tr'],m:[0,0,0],
+   s:{f:'panel',d:{mode:'webview',title:'育兒津貼申辦',btn:'送出申請',rows:[
+      {t:'field',l:'申請人',v:'林　立',auto:1},{t:'field',l:'身分證字號',v:'A12***4567',auto:1},
+      {t:'field',l:'戶籍地址',v:'桃園市桃園區義民路二段',auto:1},{t:'field',l:'受益幼兒',v:'林小○（6 個月）',auto:1},
+      {t:'photo',has:1,v:'已上傳 存摺封面影本'}]}}},
+  {t:'送出後每一個階段都會推播，進度留在 App。',m:[0,0,0],
+   s:{f:'done',d:{ok:1,title:'我的申辦',h:'申請已受理',sub:'目前狀態：已收件 → 審核中 → 核准撥款<br>每個階段變更都會通知你。',
+      push:['桃園市民卡','您有一則新的服務提醒：您的申請已進入審核階段，預計 7 個工作天內完成。']}}}
+ ]
+},
+{
+ id:'trash', label:'垃圾車位置', sub:'環保局',
+ task:'看垃圾車到哪裡了',
+ src:'受訪者二：垃圾車即時位置功能點進去後，是叫使用者「另外下載」垃圾車 App，相當不方便。',
+ hdNow:'叫你下載另一支 App', hdNew:'原生功能／API',
+ now:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市民生活」，點選垃圾車即時位置。',s:{f:'list',d:SRV_LIFE('trash')},m:[0,0,0]},
+  {t:'跳出去之後，畫面是要你再下載一支 App。',badge:['bad','已離開 App','tr'],m:[1,0,0],
+   s:{f:'store',d:{name:'桃園垃圾車即時通',by:'桃園市政府環境保護局',note:'※ 市民卡 App 內只有連結，實際功能要另外安裝一支 App。'}}},
+  {t:'手機裡多一支只用來看垃圾車的 App，多數人裝了就忘。',m:[1,0,0],
+   s:{f:'done',d:{ok:0,title:'市民生活',nav:'市民生活',h:'又多一支 App',
+      sub:'市民要記得哪個功能在哪一支 App 裡，這正是單一入口要解決的問題。',
+      quote:['受訪者二','「App 應該定位為一站式服務平台，而非只是導向外部系統的入口。」']}}}
+ ],
+ pro:[
+  {t:'開啟市民卡 App。',s:{f:'home'},m:[0,0,0]},
+  {t:'進入「市民生活」，點選垃圾車即時位置。',s:{f:'list',d:SRV_LIFE('trash')},m:[0,0,0]},
+  {t:'環保局提供 API，地圖直接在 App 內顯示，不必再裝一支 App。',badge:['good','原生功能','tr'],m:[0,0,0],
+   s:{f:'panel',d:{mode:'native',title:'垃圾車即時位置',btn:'開啟到點提醒',rows:[
+      {t:'map',v:'約 5 分鐘後到達'},
+      {t:'field',l:'您的收運點',v:'義民路二段 158 號前',auto:1},
+      {t:'field',l:'今日收運時間',v:'19:10 － 19:25'},
+      {t:'note',v:'到點提醒屬「社區活動」推播分類，可隨時關閉。'}]}}},
+  {t:'到點前五分鐘主動提醒，不必站在路邊等。',m:[0,0,0],
+   s:{f:'done',d:{ok:1,title:'市民生活',nav:'市民生活',h:'已開啟到點提醒',sub:'收運車接近你的收運點時會主動通知。',
+      push:['桃園市民卡','您有一則新的服務提醒：垃圾車預計 5 分鐘後抵達義民路二段收運點。']}}}
+ ]
+}
+];
+
+/* ---------- 渲染 ---------- */
+function build(step){
+  var s=step.s, html=T[s.f](s.d||{});
+  var badge = step.badge ? '<span class="mark mark-'+step.badge[0]+' '+(step.badge[2]||'tr')+'">'+step.badge[1]+'</span>' : '';
+  return '<div class="notch"></div>'+badge+'<div style="position:absolute;inset:0">'+html+'</div>';
+}
+
+var si=0, i=0;
+var $=function(id){return document.getElementById(id);};
+var picker=$('picker');
+
+SCN.forEach(function(sc,k){
+  var b=document.createElement('button');
+  b.type='button'; b.className='pk'; b.setAttribute('aria-pressed', k===0?'true':'false');
+  b.innerHTML=sc.label+'<small>'+sc.sub+'</small>';
+  b.addEventListener('click',function(){ si=k; i=0; syncPicker(); render(); });
+  picker.appendChild(b);
+});
+function syncPicker(){
+  var bs=picker.children;
+  for(var k=0;k<bs.length;k++) bs[k].setAttribute('aria-pressed', k===si?'true':'false');
+}
+
+function render(){
+  var sc=SCN[si];
+  var MAX=Math.max(sc.now.length, sc.pro.length);
+  if(i>MAX-1) i=MAX-1;
+  var a=Math.min(i, sc.now.length-1), b=Math.min(i, sc.pro.length-1);
+
+  $('taskTitle').textContent='情境：'+sc.task;
+  $('taskSrc').textContent=sc.src;
+  $('hdNow').textContent=sc.hdNow;
+  $('hdNew').textContent=sc.hdNew;
+  $('subNow').textContent=sc.now[a].t;
+  $('subNew').textContent=sc.pro[b].t;
+  $('scrNow').innerHTML=build(sc.now[a]);
+  $('scrNew').innerHTML=build(sc.pro[b]);
+
+  var mn=sc.now[a].m, mp=sc.pro[b].m;
+  $('tn1').textContent=mn[0]; $('tn2').textContent=mn[1]; $('tn3').textContent=mn[2];
+  $('tp1').textContent=mp[0]; $('tp2').textContent=mp[1]; $('tp3').textContent=mp[2];
+
+  var d=$('dots'); d.innerHTML='';
+  for(var k=0;k<MAX;k++){ var x=document.createElement('i'); if(k<=i) x.className='on'; d.appendChild(x); }
+  $('stepNo').textContent=i+1; $('stepAll').textContent=MAX;
+  $('btnPrev').disabled = i===0;
+  $('btnNext').disabled = i===MAX-1;
+}
+
+$('btnNext').addEventListener('click',function(){ var M=Math.max(SCN[si].now.length,SCN[si].pro.length); if(i<M-1){i++;render();} });
+$('btnPrev').addEventListener('click',function(){ if(i>0){i--;render();} });
+$('btnReset').addEventListener('click',function(){ i=0; render(); });
+document.addEventListener('keydown',function(e){
+  var M=Math.max(SCN[si].now.length,SCN[si].pro.length);
+  if(e.key==='ArrowRight'&&i<M-1){i++;render();}
+  if(e.key==='ArrowLeft'&&i>0){i--;render();}
+});
+
+/* 手機版切換 */
+function seg(which){
+  var isNow=which==='now';
+  $('segNow').setAttribute('aria-pressed',String(isNow));
+  $('segNew').setAttribute('aria-pressed',String(!isNow));
+  $('laneNow').classList.toggle('show',isNow);
+  $('laneNew').classList.toggle('show',!isNow);
+}
+$('segNow').addEventListener('click',function(){seg('now');});
+$('segNew').addEventListener('click',function(){seg('new');});
+
+/* 先初始化互動情境：避免後面的靜態示範區任何單一錯誤影響「下一步」 */
+render();
+
+/* 靜態示範畫面 */
+$('consentDemo').innerHTML=T.consent({service:'場地租借',system:'公共場地租借系統',dept:'民政局',
+  scopes:[['姓名、身分證字號','驗證申請人身分，必要',0],['手機號碼、電子信箱','接收審核結果，必要',0],['通訊地址','寄送紙本核准函，可關閉',1]]});
+$('authDemo').innerHTML=T.auth();
+
+$('push1').innerHTML=T.notif({items:[
+  ['公托名額釋出','您所在的桃園區有 2 處公設民營托嬰中心於 10/25 開放抽籤登記，幼兒滿 2 歲前可先加入候補。','查看登記方式','上午 9:12'],
+  ['兒童發育篩檢','幼兒已滿 6 個月，可預約鄰近合約院所進行發育篩檢與早療評估，費用由市府補助。','預約院所','上午 9:12'],
+  ['育兒津貼','您符合育兒津貼請領資格，可於 App 內線上申辦，免備戶籍謄本。','立即申辦','昨天']
+],foot:'本頁依您持有的一生好運卡與設籍資料推播。可於「我的卡證 → 推播分類」隨時退訂。'});
+
+$('push2').innerHTML=T.notif({items:[
+  ['長者健康促進課程','義民里關懷據點 10/22 開辦防跌運動班，持敬老愛心卡免費參加，尚餘 6 個名額。','報名','上午 9:12'],
+  ['敬老愛心卡點數','本季點數尚有 480 點未使用，可用於搭乘市區公車與特約市場消費，12/31 到期。','查看使用方式','上午 9:12'],
+  ['長照資源','您設籍的里別新增 1 處日間照顧中心，提供交通接送服務。','查看','前天']
+],foot:'不推播育兒與托育資訊。依受訪者三建議，65 歲以上僅推播長者用得到的福利。'});
+
+$('push3').innerHTML=T.notif({items:[
+  ['中壢區社區活動','您居住的里別本週六有免費手機教學課程，可協助家中長輩報名。','查看','上午 9:12'],
+  ['成人健檢','年滿 30 歲可預約成人預防保健服務，市府補助全額費用。','預約','上午 9:12']
+],foot:'未持福利卡者僅收到一般性市政與社區資訊，不會收到與自己無關的福利通知。'});
+
+/* 深淺色 */
+var tb=$('themeBtn');
+function label(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  var dark = cur ? cur==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  tb.textContent = dark ? '淺色' : '深色';
+  return dark;
+}
+label();
+tb.addEventListener('click',function(){
+  var dark=label();
+  document.documentElement.setAttribute('data-theme', dark?'light':'dark');
+  label();
+});
+
+})();
+</script>
+</body>
+</html>
